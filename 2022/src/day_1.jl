@@ -1,6 +1,6 @@
-# https://adventofcode.com/2022/day/19
+# https://adventofcode.com/2022/day/1
 
-input = readlines("2022/data/day_19.txt")
+input = readlines("2022/data/day_1.txt")
 
 function part_1(input)
     nothing
