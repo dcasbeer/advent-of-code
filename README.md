@@ -23,3 +23,5 @@ For my setup:
     * For a specific day
         * `julia> AdventOfCode.setup_files(year, day)`
         * Where year is a four number format, and day is the day of the month.
+
+I use `Advent of Code to Markdown` Chrome extension to download the instructions (can I automate this?)
