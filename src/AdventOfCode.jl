@@ -24,11 +24,15 @@ end
 function _template(year, day; include_year = true)
     rel_path = joinpath("data", "day_$day.txt")
     include_year && (rel_path = joinpath(string(year), rel_path))
-    
+
+    rel_testpath = joinpath("testdata", "day_$day.txt")
+    include_year && (rel_testpath = joinpath(string(year), rel_testpath))
+
     """
     # $(_base_url(year, day))
 
-    input = readlines("$rel_path")
+    input = readlines("$rel_testpath")
+    # input = readlines("$rel_path")
 
     function part_1(input)
         nothing
