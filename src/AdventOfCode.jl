@@ -62,6 +62,22 @@ function _setup_data_file(year, day; include_year = true)
             write(io, data)
         end
     end
+
+    rel_testpath = joinpath("testdata", "day_$day.txt")
+    include_year && (rel_testpath = joinpath(string(year), rel_testpath))
+
+    data_path = joinpath(pwd(), rel_testpath)
+    if isfile(data_path)
+        @warn "$data_path already exists. AdventOfCode.jl will not redownload it"
+        return nothing
+    end
+    if _is_unlocked(year, day)
+        data = ""
+        mkpath(splitdir(data_path)[1])
+        open(data_path, "w+") do io
+            write(io, data)
+        end
+    end
 end
 
 function _is_unlocked(year, day)
