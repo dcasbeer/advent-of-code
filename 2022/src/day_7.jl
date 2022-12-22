@@ -1,97 +1,99 @@
 # https://adventofcode.com/2022/day/7
-using Graphs
 
-input = readlines("2022/testdata/day_7.txt")
-# input = readlines("2022/data/day_7.txt")
+# input = readlines("2022/testdata/day_7.txt")
+input = readlines("2022/data/day_7.txt")
 
-function add_dirnode!(G,rmap, map, mdata, row, current_node)
+
+function add_dirnode!(mdata, row, current_dir, uidx)
     name = row[5:end]
-    add_vertex!(G)
-    # @show name, nv(G)
-    rmap[nv(G)] = name
-    map[name] = nv(G)
-    mdata[name] = ["dir", name, 0] 
-    add_edge!(G, current_node, nv(G))
+    mdata[uidx] = ["dir", name, 0, current_dir, Dict()] 
+    mdata[current_dir][end][name] =  uidx
 end
-
-function add_filenode!(G,rmap, map, mdata, row, current_node)
+function add_filenode!(mdata, row, current_dir, uidx)
     space = findfirst(' ', row)
     name = row[space+1:end]
     size = parse(Int,row[begin:space-1])
-    add_vertex!(G)
-    # @show name, nv(G)
-    rmap[nv(G)] = name
-    map[name] = nv(G)
-    mdata[name] = ["file", name, size] 
-    add_edge!(G, current_node, nv(G))
+    mdata[uidx] = ["file", name, size, current_dir, Dict()] 
+    mdata[current_dir][end][name] = uidx
 end
-
-function calc_size!(mdata, cn, G, map, rmap)
-    if mdata[rmap[cn]][1] == "file"
-        return mdata[rmap[cn]][3]
-    end
-    size = 0
-    for n = neighbors(G,cn)
-        size += calc_size!(mdata, n, G, map, rmap)
-    end
-    mdata[rmap[cn]][3] = size
-    return mdata[rmap[cn]][3]
-end
-
 function create_graph(input)
-    map = Dict()
-    rmap = Dict()
     mdata = Dict()
-    G = DiGraph(1)
-    map["/"] = 1  # Name to graph index
-    rmap[1] = "/" # Graph index to name
-    mdata["/"] = ["dir", "/", -1] # Node data: Type(dir or file), Name, and size (default to -1 if not calculated)
-    current_node = 1
-
-    for row ∈ input
+    mdata[1] = ["dir", "/", 0, [], Dict()] 
+    current_dir = 1
+    unique_idx = 1
+    for row ∈ input[2:end]
         # @info "Next Row"
         # @show row
         if occursin("..", row)
             # @info "Going up a directory"
-            # @show current_node
-            current_node = inneighbors(G, current_node)[1] # only one parent
-            # @show current_node
+            # @show current_dir
+            current_dir = mdata[current_dir][4]
+            # @show current_dir
+            nothing
         elseif occursin("\$ cd", row)
             # @info "Going into directory"
-            # @show current_node
+            # @show current_dir
             i = findlast(' ', row) + 1
-            current_node = map[row[i:end]]
-            # @show current_node
+            current_dir = mdata[current_dir][end][row[i:end]]
+            # current_dir = map[row[i:end]]
+            # @show current_dir
+            nothing
         elseif occursin("\$ ls", row)
             nothing
         elseif occursin("dir", row)
             # @info "Adding a directory"
-            add_dirnode!(G, rmap, map, mdata, row, current_node)
+            unique_idx += 1
+            add_dirnode!(mdata, row, current_dir, unique_idx)
+            nothing
         else
             # @info "Adding a file"
-            add_filenode!(G, rmap, map, mdata, row, current_node)
+            unique_idx += 1
+            add_filenode!(mdata, row, current_dir, unique_idx)
         end
     end
-    calc_size!(mdata, 1, G, map, rmap)
+    return mdata
+end
+
+function calc_size!(mdata, cn)
+    if mdata[cn][1] == "file"
+        return mdata[cn][3]
+    end
+    size = 0
+    for (key,value) ∈ mdata[cn][end]
+        size += calc_size!(mdata, value)
+    end
+    mdata[cn][3] = size
+    return mdata[cn][3]
+end
+
+function part_1(input)
+    mdata = create_graph(input)
+    calc_size!(mdata, 1)
     total = 0
     for (key,value) ∈ mdata
         if value[1] == "dir" && value[3] <= 100000
             total += value[3]
         end
     end
-    return total, mdata, G, map, rmap
+    return total, mdata
+
 end
-
-
-total, mdata, G, m, rm = create_graph(input)
+total, mdata = part_1(input)
 @info total
 
-# function part_1(input)
-#     nothing
-# end
-# @info part_1(input)
-
-function part_2(input)
-    nothing
+function part_2(mdata)
+    fs = 70000000
+    req = 30000000
+    used = mdata[1][3]
+    space = fs - used
+    need = req - space
+    @show need
+    best = used
+    for (key,value) ∈ mdata
+        if (value[3] >= need) && (value[3] < best) && (value[1] == "dir")
+            best = value[3]
+        end
+    end
+    return best
 end
-@info part_2(input)
+@info part_2(mdata)
