@@ -8,6 +8,10 @@ mutable struct State
     x::Int
     y::Int
 end
+import Base.==  
+import Base.=== # Trying to get Set of my State struct to work and not add duplicates ???
+h::State == t::State = (h.x == t.x) && (h.y == t.y) 
+h::State === t::State = (h.x == t.x) && (h.y == t.y) 
 
 function reldistance(h,t)
     rdis = State(0,0)
