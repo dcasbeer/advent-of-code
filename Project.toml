@@ -20,6 +20,7 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Mocking = "78c3b35d-d492-501b-9361-3d52fe80e533"
 
 [compat]
+Distances = "0.10"
 HTTP = "1"
 JSON = "0.21"
 Mocking = "0.7"
